@@ -1,7 +1,7 @@
 import config
 import logging
 
-from aiogram import Bot, types
+from aiogram import Bot, types, executor
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.dispatcher import Dispatcher
 from aiogram.dispatcher.webhook import SendMessage
@@ -21,7 +21,10 @@ async def echo(message: types.Message):
 
 
 async def on_startup(dp):
-    await bot.set_webhook(config.WEBHOOK_URL)
+    logging.info("Configure webhook...")
+    await bot.delete_webhook()
+    if config.WEBHOOK_USE:
+        await bot.set_webhook(config.WEBHOOK_URL)
 
 
 async def on_shutdown(dp):
@@ -38,15 +41,18 @@ async def on_shutdown(dp):
 
 
 def main():
-    start_webhook(
-        dispatcher=dp,
-        webhook_path=config.WEBHOOK_PATH,
-        on_startup=on_startup,
-        on_shutdown=on_shutdown,
-        skip_updates=config.SKIP_UPDATES,
-        host=config.WEBAPP_HOST,
-        port=config.WEBAPP_PORT,
-    )
+    if config.WEBHOOK_USE:
+        start_webhook(
+            dispatcher=dp,
+            webhook_path=config.WEBHOOK_PATH,
+            on_startup=on_startup,
+            on_shutdown=on_shutdown,
+            skip_updates=config.SKIP_UPDATES,
+            host=config.WEBAPP_HOST,
+            port=config.WEBAPP_PORT,
+        )
+    else:
+        executor.start_polling(dp, skip_updates=config.SKIP_UPDATES)
 
 
 if __name__ == '__main__':

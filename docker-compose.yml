@@ -1,14 +1,17 @@
-version: '3.8'
+version: '3.9'
 
 services:
   bot:
     build: .
     env_file: .env
+    ports:
+      - $WEBAPP_PORT:$WEBAPP_PORT
     volumes:
       - .:/bot
     networks:
-      - bot-network
+      - network1
 
 networks:
-  bot-network:
-    driver: bridge
+  network1:
+    name: $DOCKER_NETWORK_NAME
+    external: $DOCKER_NETWORK_EXTERNAL
